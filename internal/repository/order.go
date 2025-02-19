@@ -33,6 +33,7 @@ type OrderRepository interface {
 	listenOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error)
 	UpdateOrder(ctx context.Context, or *model.Order) (*model.Order, error)
 	updateOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error)
+	GetOrderByStatus(ctx context.Context, status string) ([]*model.Order, error)
 }
 
 func NewOrderRepository(
@@ -257,4 +258,9 @@ func (r *orderRepository) updateOrderf(ctx context.Context, or *model.Order, mid
 		return nil, err
 	}
 	return o, nil
+}
+
+func (r *orderRepository) GetOrderByStatus(ctx context.Context, status string) ([]*model.Order, error) {
+	tx := newOrder(r.DB(ctx))
+	return tx.Where(tx.Status.Eq(status)).Limit(50).Find()
 }

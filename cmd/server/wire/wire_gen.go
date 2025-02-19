@@ -61,7 +61,8 @@ func NewWire(viperViper *viper.Viper, logger *log.Logger) (*app.App, func(), err
 	sysConfigHandler := handler.NewSysConfigHandler(handlerHandler, sysConfigService)
 	httpServer := server.NewHTTPServer(logger, viperViper, jwtJWT, userHandler, walletHandler, merchantsHandler, merchantsMetaHandler, orderHandler, sysWalletHandler, statsHandler, merchantsApiHandler, sysConfigHandler)
 	job := server.NewJob(logger)
-	appApp := newApp(httpServer, job)
+	task := server.NewTask(logger)
+	appApp := newApp(httpServer, job, task)
 	return appApp, func() {
 	}, nil
 }
@@ -74,9 +75,9 @@ var serviceSet = wire.NewSet(service.NewService, service.NewUserService, service
 
 var handlerSet = wire.NewSet(handler.NewHandler, handler.NewUserHandler, handler.NewWalletHandler, handler.NewMerchantsHandler, handler.NewMerchantsMetaHandler, handler.NewOrderHandler, handler.NewMerchantsApiHandler, handler.NewSysWalletHandler, handler.NewStatsHandler, handler.NewSysConfigHandler)
 
-var serverSet = wire.NewSet(server.NewHTTPServer, server.NewJob)
+var serverSet = wire.NewSet(server.NewHTTPServer, server.NewJob, server.NewTask)
 
 // build App
-func newApp(httpServer *http.Server, job *server.Job) *app.App {
-	return app.NewApp(app.WithServer(httpServer, job), app.WithName("demo-server"))
+func newApp(httpServer *http.Server, job *server.Job, task *server.Task) *app.App {
+	return app.NewApp(app.WithServer(httpServer, job, task), app.WithName("demo-server"))
 }
