@@ -1,0 +1,2 @@
+ALTER TABLE sys_wallet 
+ADD COLUMN version INT NOT NULL DEFAULT 0; 
