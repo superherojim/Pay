@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import Login from '../pages/Login.vue'
 import AdminLayout from '../layouts/AdminLayout.vue'
 import Dashboard from '../pages/admin/Dashboard.vue'
@@ -75,7 +75,9 @@ const routes = [
 ]
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: import.meta.env.VITE_ROUTER_MODE === 'hash'
+        ? createWebHashHistory()
+        : createWebHistory(),
     routes
 })
 
