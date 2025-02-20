@@ -212,3 +212,7 @@ func (h *OrderHandler) TestCall(ctx *gin.Context) {
 #### 订单管理
 
 ![image](./assets/image-order.png)
+
+#### 支付
+
+![image](./assets/image-pay.png)
