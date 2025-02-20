@@ -3,63 +3,63 @@
 [![GitHub License](https://img.shields.io/github/license/CheemsHappyCoin/Pay)](https://github.com/CheemsHappyCoin/Pay/blob/main/LICENSE)
 [![Web3 Ready](https://img.shields.io/badge/web3-ready-blue.svg)](https://pump.fun/coin/GshQsatxGANKbR4HAZE96HruyqoVvHnsktJWWLzXpump)
 
-An open-source Web3 third-party payment system that provides secure and reliable payment solutions for decentralized applications. Developed by the [CheemsHappy](https://pump.fun/coin/GshQsatxGANKbR4HAZE96HruyqoVvHnsktJWWLzXpump) community.
+开源的 Web3 第三方支付系统，为去中心化应用提供安全可靠的支付解决方案。由 [CheemsHappy](https://pump.fun/coin/GshQsatxGANKbR4HAZE96HruyqoVvHnsktJWWLzXpump) 社区驱动开发。
 
 ```
 A meme created to celebrate the joyful spirit of Cheems. Cheems just wants you to be happy and spread happiness around the world.
 ```
 
-We build on [pump.fun](https://pump.fun/coin/GshQsatxGANKbR4HAZE96HruyqoVvHnsktJWWLzXpump)
+we build on [pump.fun](https://pump.fun/coin/GshQsatxGANKbR4HAZE96HruyqoVvHnsktJWWLzXpump)
 
 # Social Media
 
-If you want to sponsor CheemsHappy, please join [TG - cheemshappy](https://t.me/+j7uij-U90lAyMzM1)
+如果你想赞助 cheemshappy，请加入[TG - cheemshappy](https://t.me/+j7uij-U90lAyMzM1)
 
-If you want to follow CheemsHappy, please join [X - cheemshappycoin](https://x.com/CheemsHappyCoin)
+如果你想关注 cheemshappy，请加入[X - cheemshappycoin](https://x.com/CheemsHappyCoin)
 
-## Features ✨
+## 功能特性 ✨
 
-### Core Features
+### 核心功能
 
-- 💰 Cryptocurrency payment processing
-- 📊 Real-time transaction status monitoring
-- 🔗 Blockchain transaction hash tracking
+- 💰 加密货币收付款处理
+- 📊 实时交易状态监控
+- 🔗 区块链交易哈希追踪
 
-### Merchant Services
+### 商户服务
 
-- 🛒 Merchant registration and management
-- 🔑 API key generation and management
-- 📩 Payment callback notifications
-- 📈 Transaction data statistics
+- 🛒 商户注册与管理
+- 🔑 API 密钥生成与管理
+- 📩 支付回调通知
+- 📈 交易数据统计
 
-### Security Features
+### 安全特性
 
-- 🔐 HMAC-SHA256 signature verification
-- 🛡️ JWT + IP binding authentication
-- 🔒 Transaction blacklist mechanism
-- 📡 Encrypted transmission of request parameters
+- 🔐 HMAC-SHA256 签名验证
+- 🛡️ JWT + IP 绑定认证
+- 🔒 交易黑名单机制
+- 📡 请求参数加密传输
 
-## Tech Stack 🛠️
+## 技术栈 🛠️
 
-**Backend Core**
+**后端核心**
 
 - Go 1.20 + GORM
-- JWT authentication | Redis caching | MySQL 5.7
+- JWT 认证 | Redis 缓存 | MySQL 5.7
 
-**Frontend Interface**
+**前端界面**
 
 - Vue 3 | Element Plus | Axios
 
-## Quick Deployment 🚀
+## 快速部署 🚀
 
-### Environment Requirements
+### 环境要求
 
 - Go 1.20+
 - MySQL 5.7+
 - Redis 6.2+
 - Node.js 16+
 
-### Installation Steps
+### 安装步骤
 
 ```
 git clone https://github.com/CheemsHappyCoin/Pay.git
@@ -70,7 +70,7 @@ go build -o pay
 ./pay -config ./config/demo.yml
 ```
 
-### Frontend
+### 前端
 
 ```
 cd web
@@ -78,7 +78,7 @@ npm install
 npm run dev
 ```
 
-### Configuration File
+### 配置文件
 
 ```
 env: prod
@@ -110,14 +110,14 @@ log:
   max_size: 1024
   compress: true
 
-# Note: The rpc_endpoints in the configuration file need to be configured with the corresponding RPC nodes.
+# 注意配置文件中的rpc_endpoints，需要配置对应的rpc节点
 rpc_endpoints:
   # EVM
   "1": "https://mainnet.infura.io/v3/YOUR_INFURA_KEY"
   "56": "https://bsc-dataseed.binance.org/"
   "137": "https://polygon-rpc.com"
 
-  # Test
+  # test
   "5": "https://goerli.infura.io/v3/YOUR_INFURA_KEY"
   "97": "https://data-seed-prebsc-1-s1.binance.org:8545"
 
@@ -131,11 +131,11 @@ rpc_endpoints:
 
 ```
 
-### System Description
+### 系统说明
 
-### Create Order
+### 创建订单
 
-The api_key is the merchant's api_key.
+api_key 是商户的 api_key
 
 ```
 curl --location 'localhost:8100/v1/order/create' \
@@ -149,13 +149,13 @@ curl --location 'localhost:8100/v1/order/create' \
     "return_url":"baidu.com",
     "chain":"11155111",
     "time_out":30,
-    "remark": "remark"
+    "remark": "reamek"
 }'
 ```
 
-### Merchant Callback System
+### 商户回调系统
 
-The secret_key is the merchant's secret_key.
+secret_key 是商户的 secret_key
 
 ```
 func (h *OrderHandler) TestCall(ctx *gin.Context) {
@@ -190,25 +190,25 @@ func (h *OrderHandler) TestCall(ctx *gin.Context) {
 }
 ```
 
-### Usage Instructions
+### 使用说明
 
-1. Create the main wallet for the system.
-2. Create a merchant.
-3. Add a merchant wallet or automatically generate a merchant wallet.
-4. Configure the merchant API (including callback URL and secret key), which is used for callback signature verification.
+1. 创建系统主钱包
+2. 创建商户
+3. 新增商户钱包或者自动生成商户钱包
+4. 配置商户 api（包括回调地址和秘钥），秘钥用作回调验签
 
-### System Pages
+### 系统页面
 
 ![image](./assets/image.png)
 
-#### Merchant Management
+#### 商户管理
 
 ![image](./assets/image-mer.png)
 
-#### API Management
+#### api 管理
 
 ![image](./assets/image-api.png)
 
-#### Order Management
+#### 订单管理
 
 ![image](./assets/image-order.png)
