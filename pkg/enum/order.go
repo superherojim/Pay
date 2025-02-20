@@ -6,4 +6,5 @@ const (
 	OrderStatusFailed    string = "failed"
 	OrderStatusCanceled  string = "canceled"
 	OrderStatusListening string = "listening"
+	OrderStatusTimeout   string = "timeout"
 )

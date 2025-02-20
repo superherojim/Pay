@@ -14,6 +14,7 @@ type OrderParam struct {
 	Amount    string `json:"amount"`
 	Chain     string `json:"chain"`
 	ReturnURL string `json:"return_url"`
+	TimeOut   int    `json:"time_out"`
 	Remark    string `json:"remark"`
 }
 

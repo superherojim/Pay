@@ -12,6 +12,7 @@ import (
 	"cheemshappy_pay/internal/server"
 	"cheemshappy_pay/internal/service"
 	"cheemshappy_pay/pkg/app"
+	"cheemshappy_pay/pkg/chain"
 	"cheemshappy_pay/pkg/helper/sid"
 	"cheemshappy_pay/pkg/jwt"
 	"cheemshappy_pay/pkg/log"
@@ -51,7 +52,8 @@ func NewWire(viperViper *viper.Viper, logger *log.Logger) (*app.App, func(), err
 	merchantsApiService := service.NewMerchantsApiService(serviceService, merchantsApiRepository)
 	sysConfigRepository := repository.NewSysConfigRepository(repositoryRepository)
 	sysConfigService := service.NewSysConfigService(serviceService, sysConfigRepository)
-	orderService := service.NewOrderService(serviceService, orderRepository, merchantsApiService, merchantsService, walletService, sysConfigService)
+	verifierFactory := chain.NewVerifierFactory()
+	orderService := service.NewOrderService(serviceService, orderRepository, merchantsApiService, merchantsService, walletService, sysConfigService, viperViper, verifierFactory)
 	orderHandler := handler.NewOrderHandler(handlerHandler, orderService, walletService, merchantsApiService)
 	sysWalletService := service.NewSysWalletService(sysWalletRepository)
 	sysWalletHandler := handler.NewSysWalletHandler(handlerHandler, sysWalletService, walletService)

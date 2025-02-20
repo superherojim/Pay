@@ -9,6 +9,7 @@ import (
 	"cheemshappy_pay/internal/server"
 	"cheemshappy_pay/internal/service"
 	"cheemshappy_pay/pkg/app"
+	"cheemshappy_pay/pkg/chain"
 	"cheemshappy_pay/pkg/helper/sid"
 	"cheemshappy_pay/pkg/jwt"
 	"cheemshappy_pay/pkg/log"
@@ -85,5 +86,6 @@ func NewWire(*viper.Viper, *log.Logger) (*app.App, func(), error) {
 		jwt.NewJwt,
 		newApp,
 		req.NewClient,
+		chain.NewVerifierFactory,
 	))
 }

@@ -27,6 +27,7 @@ type Order struct {
 	TxHash       string         `gorm:"column:tx_hash;comment:交易hash" json:"tx_hash"`             // 交易hash
 	Ac           string         `gorm:"column:ac;comment:钱包地址" json:"ac"`                         // 钱包地址
 	APIKey       string         `gorm:"column:api_key;comment:商户apikey" json:"api_key"`           // 商户apikey
+	TimeOut      int32          `gorm:"column:time_out;comment:超时时间" json:"time_out"`             // 超时时间
 	Status       string         `gorm:"column:status;comment:订单状态" json:"status"`                 // 订单状态
 	NotifyStatus string         `gorm:"column:notify_status;comment:订单回调结果" json:"notify_status"` // 订单回调结果
 	Remark       string         `gorm:"column:remark;comment:备注" json:"remark"`                   // 备注

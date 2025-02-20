@@ -40,6 +40,7 @@ func newOrder(db *gorm.DB, opts ...gen.DOOption) order {
 	_order.TxHash = field.NewString(tableName, "tx_hash")
 	_order.Ac = field.NewString(tableName, "ac")
 	_order.APIKey = field.NewString(tableName, "api_key")
+	_order.TimeOut = field.NewInt32(tableName, "time_out")
 	_order.Status = field.NewString(tableName, "status")
 	_order.NotifyStatus = field.NewString(tableName, "notify_status")
 	_order.Remark = field.NewString(tableName, "remark")
@@ -69,6 +70,7 @@ type order struct {
 	TxHash       field.String // 交易hash
 	Ac           field.String // 钱包地址
 	APIKey       field.String // 商户apikey
+	TimeOut      field.Int32  // 超时时间
 	Status       field.String // 订单状态
 	NotifyStatus field.String // 订单回调结果
 	Remark       field.String // 备注
@@ -104,6 +106,7 @@ func (o *order) updateTableName(table string) *order {
 	o.TxHash = field.NewString(table, "tx_hash")
 	o.Ac = field.NewString(table, "ac")
 	o.APIKey = field.NewString(table, "api_key")
+	o.TimeOut = field.NewInt32(table, "time_out")
 	o.Status = field.NewString(table, "status")
 	o.NotifyStatus = field.NewString(table, "notify_status")
 	o.Remark = field.NewString(table, "remark")
@@ -126,7 +129,7 @@ func (o *order) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (o *order) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 19)
+	o.fieldMap = make(map[string]field.Expr, 20)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["m_id"] = o.MID
 	o.fieldMap["no"] = o.No
@@ -140,6 +143,7 @@ func (o *order) fillFieldMap() {
 	o.fieldMap["tx_hash"] = o.TxHash
 	o.fieldMap["ac"] = o.Ac
 	o.fieldMap["api_key"] = o.APIKey
+	o.fieldMap["time_out"] = o.TimeOut
 	o.fieldMap["status"] = o.Status
 	o.fieldMap["notify_status"] = o.NotifyStatus
 	o.fieldMap["remark"] = o.Remark

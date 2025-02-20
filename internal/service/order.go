@@ -5,6 +5,7 @@ import (
 	v1 "cheemshappy_pay/api/v1"
 	"cheemshappy_pay/internal/model"
 	"cheemshappy_pay/internal/repository"
+	"cheemshappy_pay/pkg/chain"
 	"cheemshappy_pay/pkg/enum"
 	"context"
 	"crypto/hmac"
@@ -17,9 +18,11 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
@@ -31,6 +34,7 @@ type OrderService interface {
 	SuccessOrder(ctx context.Context, req *v1.OrderParam) (*model.Order, error)
 	GetOrderPay(ctx context.Context, no string) (*v1.OrderPayOut, error)
 	ListenOrder(ctx context.Context, no string, req *v1.OrderPayTxOut) (*model.Order, error)
+	ListenOrderPay(ctx context.Context, no string) error
 }
 
 func NewOrderService(
@@ -40,6 +44,8 @@ func NewOrderService(
 	merchantsService MerchantsService,
 	walletService WalletService,
 	sysConfigService SysConfigService,
+	conf *viper.Viper,
+	verifierFactory *chain.VerifierFactory,
 ) OrderService {
 	return &orderService{
 		Service:             service,
@@ -48,6 +54,8 @@ func NewOrderService(
 		merchantsService:    merchantsService,
 		walletService:       walletService,
 		sysConfigService:    sysConfigService,
+		conf:                conf,
+		verifierFactory:     verifierFactory,
 	}
 }
 
@@ -58,6 +66,8 @@ type orderService struct {
 	walletService       WalletService
 	merchantsService    MerchantsService
 	sysConfigService    SysConfigService
+	conf                *viper.Viper
+	verifierFactory     *chain.VerifierFactory
 }
 
 func (s *orderService) GetOrder(ctx context.Context, id int64) (*model.Order, error) {
@@ -97,39 +107,17 @@ func (s *orderService) CreateOrder(ctx context.Context, req *v1.OrderParam, apik
 		return nil, errors.New("amount is invalid")
 	}
 
-	supportedChains := map[string]bool{
-		// 主网
-		"1":     true, // Ethereum
-		"56":    true, // BSC
-		"137":   true, // Polygon
-		"43114": true, // Avalanche
-		"10":    true, // Optimism
-		"42161": true, // Arbitrum
-
-		// 测试网
-		"5":        true, // Goerli
-		"11155111": true, // Sepolia
-		"97":       true, // BSC Testnet
-		"80001":    true, // Polygon Mumbai
-		"43113":    true, // Avalanche Fuji
-		"420":      true, // Optimism Goerli
-		"421613":   true, // Arbitrum Goerli
-		"17000":    true, // Holesky
-	}
-
-	if !supportedChains[req.Chain] {
-		validChains := []string{
-			"1 (Mainnet)", "56 (BSC)", "137 (Polygon)",
-			"43114 (Avalanche)", "10 (Optimism)", "42161 (Arbitrum)",
-			"5 (Goerli)", "11155111 (Sepolia)", "97 (BSC Test)",
-			"80001 (Mumbai)", "43113 (Fuji)", "420 (Optimism Test)",
-			"421613 (Arbitrum Test)", "17000 (Holesky)",
-		}
+	if !chain.IsSupportedChain(req.Chain) {
+		validChains := chain.GetChainList(false)
 		return nil, fmt.Errorf("不支持的区块链网络，支持列表：%s", strings.Join(validChains, ", "))
 	}
 	wallet, err := s.walletService.GetWalletByMID(ctx, mapi.MID)
 	if err != nil {
 		return nil, err
+	}
+	to := 15
+	if req.TimeOut > 0 {
+		to = req.TimeOut
 	}
 	order := &model.Order{
 		MID:       mapi.MID,
@@ -141,6 +129,7 @@ func (s *orderService) CreateOrder(ctx context.Context, req *v1.OrderParam, apik
 		APIKey:    mapi.Apikey,
 		Ac:        wallet.Ac,
 		Amount:    req.Amount,
+		TimeOut:   int32(to),
 		Remark:    req.Remark,
 	}
 	sysConfig, err := s.sysConfigService.GetSysConfig(ctx)
@@ -339,7 +328,96 @@ func (s *orderService) ListenOrderPay(ctx context.Context, no string) error {
 	if err != nil {
 		return err
 	}
-	for _, order := range orders {
+
+	// 使用带缓冲的channel控制并发数
+	sem := make(chan struct{}, 10) // 同时处理10个订单
+	var wg sync.WaitGroup
+	for _, or := range orders {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(o *model.Order) {
+			defer func() {
+				<-sem
+				wg.Done()
+			}()
+
+			// 检查超时
+			if time.Since(o.CreatedAt).Minutes() > float64(o.TimeOut) {
+				o.Status = enum.OrderStatusTimeout
+				_, err = s.orderRepository.UpdateOrder(ctx, o)
+				if err != nil {
+					s.logger.Error("订单超时状态更新失败",
+						zap.String("order_no", o.No),
+						zap.Error(err))
+				}
+				return
+			}
+
+			// 检查交易状态
+			status, err := s.checkTransactionStatus(ctx, o)
+			if err != nil {
+				s.logger.Error("交易状态检查失败",
+					zap.String("order_no", o.No),
+					zap.String("tx_hash", o.TxHash),
+					zap.Error(err))
+				return
+			}
+
+			// 根据状态更新订单
+			if status == enum.OrderStatusSuccess {
+				_, err = s.SuccessOrder(ctx, &v1.OrderParam{OrderNo: o.CNo})
+				if err != nil {
+					s.logger.Error("订单状态更新失败",
+						zap.String("order_no", o.No),
+						zap.Error(err))
+				}
+			}
+		}(or)
 	}
+
+	wg.Wait()
 	return nil
+}
+
+// 支持多链的验证器接口
+func (s *orderService) checkTransactionStatus(ctx context.Context, order *model.Order) (string, error) {
+	chainInfo, exists := chain.SupportedChains[order.Chain]
+	if !exists {
+		return "", fmt.Errorf("unsupported chain: %s", order.Chain)
+	}
+
+	rpcURL, ok := s.conf.GetStringMapString("rpc_endpoints")[order.Chain]
+	if !ok {
+		return "", fmt.Errorf("rpc endpoint not configured for chain: %s", order.Chain)
+	}
+
+	verifier, err := s.verifierFactory.GetVerifier(chainInfo.Type)
+	if err != nil {
+		return "", fmt.Errorf("get verifier failed: %v", err)
+	}
+
+	confirmations, status, err := verifier.VerifyTransaction(ctx, rpcURL, order.TxHash)
+	if err != nil {
+		return "", err
+	}
+
+	// 检查交易状态
+	if status == 0 {
+		return enum.OrderStatusFailed, nil
+	}
+
+	// 确认数检查
+	if confirmations < s.getRequiredConfirmations(order.Chain) {
+		return enum.OrderStatusListening, nil
+	}
+
+	return enum.OrderStatusSuccess, nil
+}
+
+// 获取不同链的确认数要求
+func (s *orderService) getRequiredConfirmations(cn string) int64 {
+	if info, exists := chain.SupportedChains[cn]; exists {
+		return info.Confirmations
+	}
+	return 6 // 默认值
 }
