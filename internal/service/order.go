@@ -34,7 +34,7 @@ type OrderService interface {
 	SuccessOrder(ctx context.Context, req *v1.OrderParam) (*model.Order, error)
 	GetOrderPay(ctx context.Context, no string) (*v1.OrderPayOut, error)
 	ListenOrder(ctx context.Context, no string, req *v1.OrderPayTxOut) (*model.Order, error)
-	ListenOrderPay(ctx context.Context, no string) error
+	ListenOrderPay(ctx context.Context) error
 }
 
 func NewOrderService(
@@ -323,7 +323,7 @@ func generateSignature(data map[string]interface{}, secret string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func (s *orderService) ListenOrderPay(ctx context.Context, no string) error {
+func (s *orderService) ListenOrderPay(ctx context.Context) error {
 	orders, err := s.orderRepository.GetOrderByStatus(ctx, enum.OrderStatusListening)
 	if err != nil {
 		return err

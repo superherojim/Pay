@@ -11,6 +11,7 @@ import (
 	"cheemshappy_pay/internal/repository"
 	"cheemshappy_pay/internal/server"
 	"cheemshappy_pay/internal/service"
+	"cheemshappy_pay/internal/task"
 	"cheemshappy_pay/pkg/app"
 	"cheemshappy_pay/pkg/chain"
 	"cheemshappy_pay/pkg/helper/sid"
@@ -63,8 +64,10 @@ func NewWire(viperViper *viper.Viper, logger *log.Logger) (*app.App, func(), err
 	sysConfigHandler := handler.NewSysConfigHandler(handlerHandler, sysConfigService)
 	httpServer := server.NewHTTPServer(logger, viperViper, jwtJWT, userHandler, walletHandler, merchantsHandler, merchantsMetaHandler, orderHandler, sysWalletHandler, statsHandler, merchantsApiHandler, sysConfigHandler)
 	job := server.NewJob(logger)
-	task := server.NewTask(logger)
-	appApp := newApp(httpServer, job, task)
+	taskTask := task.NewTask()
+	orderTask := task.NewOrderTask(taskTask, orderService)
+	taskServer := server.NewTaskServer(orderTask)
+	appApp := newApp(httpServer, job, taskServer)
 	return appApp, func() {
 	}, nil
 }
@@ -77,9 +80,11 @@ var serviceSet = wire.NewSet(service.NewService, service.NewUserService, service
 
 var handlerSet = wire.NewSet(handler.NewHandler, handler.NewUserHandler, handler.NewWalletHandler, handler.NewMerchantsHandler, handler.NewMerchantsMetaHandler, handler.NewOrderHandler, handler.NewMerchantsApiHandler, handler.NewSysWalletHandler, handler.NewStatsHandler, handler.NewSysConfigHandler)
 
-var serverSet = wire.NewSet(server.NewHTTPServer, server.NewJob, server.NewTask)
+var serverSet = wire.NewSet(server.NewHTTPServer, server.NewJob, server.NewTaskServer)
+
+var taskSet = wire.NewSet(task.NewTask, task.NewOrderTask)
 
 // build App
-func newApp(httpServer *http.Server, job *server.Job, task *server.Task) *app.App {
-	return app.NewApp(app.WithServer(httpServer, job, task), app.WithName("demo-server"))
+func newApp(httpServer *http.Server, job *server.Job, task2 *server.TaskServer) *app.App {
+	return app.NewApp(app.WithServer(httpServer, job, task2), app.WithName("demo-server"))
 }

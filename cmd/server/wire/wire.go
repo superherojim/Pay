@@ -8,6 +8,7 @@ import (
 	"cheemshappy_pay/internal/repository"
 	"cheemshappy_pay/internal/server"
 	"cheemshappy_pay/internal/service"
+	"cheemshappy_pay/internal/task"
 	"cheemshappy_pay/pkg/app"
 	"cheemshappy_pay/pkg/chain"
 	"cheemshappy_pay/pkg/helper/sid"
@@ -64,11 +65,15 @@ var handlerSet = wire.NewSet(
 var serverSet = wire.NewSet(
 	server.NewHTTPServer,
 	server.NewJob,
-	server.NewTask,
+	server.NewTaskServer,
+)
+var taskSet = wire.NewSet(
+	task.NewTask,
+	task.NewOrderTask,
 )
 
 // build App
-func newApp(httpServer *http.Server, job *server.Job, task *server.Task) *app.App {
+func newApp(httpServer *http.Server, job *server.Job, task *server.TaskServer) *app.App {
 	return app.NewApp(
 		app.WithServer(httpServer, job, task),
 		app.WithName("demo-server"),
@@ -87,5 +92,6 @@ func NewWire(*viper.Viper, *log.Logger) (*app.App, func(), error) {
 		newApp,
 		req.NewClient,
 		chain.NewVerifierFactory,
+		taskSet,
 	))
 }
