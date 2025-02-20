@@ -11,7 +11,7 @@ import (
 
 func OrderAuth(logger *log.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		tokenString := ctx.Request.Header.Get("cheemshappy_pays_token")
+		tokenString := ctx.Request.Header.Get("Authorization")
 		if tokenString == "" {
 			logger.WithContext(ctx).Warn("No token", zap.Any("data", map[string]interface{}{
 				"url":    ctx.Request.URL,

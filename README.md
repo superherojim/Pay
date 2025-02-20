@@ -140,7 +140,7 @@ The api_key is the merchant's api_key.
 ```
 curl --location 'localhost:8100/v1/order/create' \
 --header 'Content-Type: application/json' \
---header 'cheemshappy_pays_token: {{merchant api_key}}' \
+--header 'Authorization: {{merchant api_key}}' \
 --data '{
     "order_no": "123AAAAABBBB",
     "m_id": 3,

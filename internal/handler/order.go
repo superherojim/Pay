@@ -58,7 +58,7 @@ func (h *OrderHandler) CreateOrder(ctx *gin.Context) {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
 	}
-	apikey := ctx.GetHeader("cheemshappy_pays_token")
+	apikey := ctx.GetHeader("Authorization")
 	if apikey == "" {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
@@ -77,7 +77,7 @@ func (h *OrderHandler) CancelOrder(ctx *gin.Context) {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
 	}
-	apikey := ctx.GetHeader("cheemshappy_pays_token")
+	apikey := ctx.GetHeader("Authorization")
 	if apikey == "" {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
