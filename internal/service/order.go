@@ -21,7 +21,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
@@ -111,6 +110,10 @@ func (s *orderService) CreateOrder(ctx context.Context, req *v1.OrderParam, apik
 		validChains := chain.GetChainList(false)
 		return nil, fmt.Errorf("不支持的区块链网络，支持列表：%s", strings.Join(validChains, ", "))
 	}
+	chainInfo, exists := chain.GetChainInfo(req.Chain)
+	if !exists {
+		return nil, fmt.Errorf("不支持的区块链网络")
+	}
 	wallet, err := s.walletService.GetWalletByMID(ctx, mapi.MID)
 	if err != nil {
 		return nil, err
@@ -126,6 +129,7 @@ func (s *orderService) CreateOrder(ctx context.Context, req *v1.OrderParam, apik
 		ReturnURL: req.ReturnURL,
 		Status:    enum.OrderStatusPending,
 		Coin:      req.Coin,
+		Chain:     chainInfo.ID,
 		APIKey:    mapi.Apikey,
 		Ac:        wallet.Ac,
 		Amount:    req.Amount,
@@ -136,7 +140,7 @@ func (s *orderService) CreateOrder(ctx context.Context, req *v1.OrderParam, apik
 	if err != nil {
 		return nil, err
 	}
-	order.PayURL = sysConfig.Domain + "cheems/happy/pay?no=" + req.OrderNo
+	order.PayURL = sysConfig.Domain + "#/cheems/happy/pay?no=" + req.OrderNo
 	return s.orderRepository.CreateOrder(ctx, order, mapi.MID)
 }
 
@@ -166,29 +170,37 @@ func (s *orderService) CancelOrder(ctx context.Context, req *v1.OrderParam, apik
 		CNo:    req.OrderNo,
 		Status: enum.OrderStatusCanceled,
 	}
-	order, err = s.orderRepository.CancelOrder(ctx, order, mapi.MID)
+	err = s.orderRepository.CancelOrder(ctx, order, mapi.MID)
 	if err != nil {
 		return nil, err
 	}
-	s.callbackMerchant(order, enum.OrderStatusCanceled)
+	or, err = s.orderRepository.GetOrderByNo(ctx, req.OrderNo)
+	if err != nil {
+		return nil, err
+	}
+	s.callbackMerchant(or, enum.OrderStatusCanceled)
 	return order, nil
 }
 
 func (s *orderService) SuccessOrder(ctx context.Context, req *v1.OrderParam) (*model.Order, error) {
 	order := &model.Order{
-		CNo:    req.OrderNo,
+		No:     req.OrderNo,
 		Status: enum.OrderStatusSuccess,
 	}
-	order, err := s.orderRepository.SuccessOrder(ctx, order, 0)
+	err := s.orderRepository.SuccessOrder(ctx, order, req.MID)
 	if err != nil {
 		return nil, err
 	}
-	go s.callbackMerchant(order, enum.OrderStatusSuccess)
+	or, err := s.orderRepository.GetOrderByNo(ctx, req.OrderNo)
+	if err != nil {
+		return nil, err
+	}
+	s.callbackMerchant(or, enum.OrderStatusSuccess)
 	return order, nil
 }
 
-func (s *orderService) GetOrderPay(ctx context.Context, no string) (*v1.OrderPayOut, error) {
-	order, err := s.orderRepository.GetOrderPay(ctx, no)
+func (s *orderService) GetOrderPay(ctx context.Context, cno string) (*v1.OrderPayOut, error) {
+	order, err := s.orderRepository.GetOrderPayCNo(ctx, cno)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +224,6 @@ func (s *orderService) ListenOrder(ctx context.Context, no string, req *v1.Order
 	if err != nil {
 		return nil, err
 	}
-	go s.callbackMerchant(order, enum.OrderStatusSuccess)
 	return order, nil
 }
 
@@ -258,27 +269,10 @@ func (s *orderService) syncCallbackMerchant(order *model.Order, status string) e
 
 	// 生成签名
 	sign := generateSignature(callbackReq, mapi.SecretKey)
-
-	// 设置请求头
-	headers := map[string]string{
-		"Content-Type":           "application/json",
-		"cheems-happy-key":       mapi.Apikey,
-		"cheems-happy-sign":      sign,
-		"cheems-happy-timestamp": fmt.Sprintf("%d", callbackReq["timestamp"]),
-		"cheems-happy-nonce":     uuid.New().String(),
-	}
+	callbackReq["sign"] = sign
 	jsonBody, _ := json.Marshal(callbackReq)
 	// 发送POST请求
 	client := &http.Client{Timeout: 10 * time.Second}
-	req, err := http.NewRequest("POST", mapi.CallbackURL, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		s.logger.Error("创建请求失败", zap.Error(err))
-		return err
-	}
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
-
 	// 重试逻辑（3次重试）
 	maxRetries := 3
 	for i := 0; i <= maxRetries; i++ {
@@ -365,7 +359,10 @@ func (s *orderService) ListenOrderPay(ctx context.Context) error {
 
 			// 根据状态更新订单
 			if status == enum.OrderStatusSuccess {
-				_, err = s.SuccessOrder(ctx, &v1.OrderParam{OrderNo: o.CNo})
+				_, err = s.SuccessOrder(ctx, &v1.OrderParam{
+					OrderNo: o.No,
+					MID:     o.MID,
+				})
 				if err != nil {
 					s.logger.Error("订单状态更新失败",
 						zap.String("order_no", o.No),

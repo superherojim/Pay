@@ -105,8 +105,8 @@ func (h *OrderHandler) SuccessOrder(ctx *gin.Context) {
 }
 
 func (h *OrderHandler) GetOrderPay(ctx *gin.Context) {
-	no := ctx.Param("no")
-	order, err := h.orderService.GetOrderPay(ctx, no)
+	cno := ctx.Param("no")
+	order, err := h.orderService.GetOrderPay(ctx, cno)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		v1.HandleError(ctx, http.StatusNotFound, fmt.Errorf("err"), nil)
 		return
@@ -139,6 +139,8 @@ func (h *OrderHandler) TestCall(ctx *gin.Context) {
 		MerchantOrderNo string `json:"merchant_order_no" binding:"required"`
 		OrderNo         string `json:"order_no" binding:"required"`
 		Status          string `json:"status" binding:"required,oneof=success failed"`
+		Amount          string `json:"amount" binding:"required"`
+		Coin            string `json:"coin" binding:"required"`
 		Sign            string `json:"sign" binding:"required"`
 		Timestamp       int64  `json:"timestamp" binding:"required"`
 	}
@@ -152,9 +154,11 @@ func (h *OrderHandler) TestCall(ctx *gin.Context) {
 		"merchant_order_no": req.MerchantOrderNo,
 		"order_no":          req.OrderNo,
 		"status":            req.Status,
+		"amount":            req.Amount,
+		"coin":              req.Coin,
 		"timestamp":         req.Timestamp,
-	}, "1e059821-1896-43f5-a227-9b1857e95517")
-	if sign != req.Sign {
+	}, "123456")
+	if req.Sign != sign {
 		v1.HandleError(ctx, http.StatusUnauthorized, v1.ErrUnauthorized, nil)
 		return
 	}

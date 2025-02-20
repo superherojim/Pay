@@ -51,6 +51,10 @@ func IsSupportedChain(chainID string) bool {
 	_, exists := SupportedChains[chainID]
 	return exists
 }
+func GetChainInfo(chainID string) (ChainInfo, bool) {
+	info, exists := SupportedChains[chainID]
+	return info, exists
+}
 
 func GetChainList(mainnetOnly bool) []string {
 	var chains []string

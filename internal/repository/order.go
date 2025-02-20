@@ -20,9 +20,9 @@ type OrderRepository interface {
 	CreateOrder(ctx context.Context, or *model.Order, mid int64) (*model.Order, error)
 	createOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error)
 	GetOrderNo() string
-	CancelOrder(ctx context.Context, or *model.Order, mid int64) (*model.Order, error)
+	CancelOrder(ctx context.Context, or *model.Order, mid int64) error
 	cancelOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error)
-	SuccessOrder(ctx context.Context, or *model.Order, mid int64) (*model.Order, error)
+	SuccessOrder(ctx context.Context, or *model.Order, mid int64) error
 	successOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error)
 	GetOrderLock(ctx context.Context, no string, mid int64) (bool, error)
 	ReleaseOrderLock(ctx context.Context, no string) error
@@ -35,6 +35,7 @@ type OrderRepository interface {
 	UpdateOrder(ctx context.Context, or *model.Order) (*model.Order, error)
 	updateOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error)
 	GetOrderByStatus(ctx context.Context, status string) ([]*model.Order, error)
+	GetOrderPayCNo(ctx context.Context, cno string) (*model.Order, error)
 }
 
 func NewOrderRepository(
@@ -98,20 +99,20 @@ func (r *orderRepository) CreateOrder(ctx context.Context, or *model.Order, mid 
 	return or, nil
 }
 
-func (r *orderRepository) CancelOrder(ctx context.Context, or *model.Order, mid int64) (*model.Order, error) {
+func (r *orderRepository) CancelOrder(ctx context.Context, or *model.Order, mid int64) error {
 	err := r.ReTryOrderLock(ctx, or, mid, r.cancelOrderf)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return or, nil
+	return nil
 }
 
-func (r *orderRepository) SuccessOrder(ctx context.Context, order *model.Order, mid int64) (*model.Order, error) {
+func (r *orderRepository) SuccessOrder(ctx context.Context, order *model.Order, mid int64) error {
 	err := r.ReTryOrderLock(ctx, order, mid, r.successOrderf)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return order, nil
+	return nil
 }
 
 func (r *orderRepository) cancelOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error) {
@@ -134,7 +135,7 @@ func (r *orderRepository) cancelOrderf(ctx context.Context, or *model.Order, mid
 func (r *orderRepository) successOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error) {
 	//TODO: 检查订单正确性
 	tx := newOrder(r.DB(ctx))
-	o, err := tx.Where(tx.No.Eq(or.No), tx.Status.Eq(enum.OrderStatusPending), tx.MID.Eq(mid)).First()
+	o, err := tx.Where(tx.No.Eq(or.No), tx.Status.Eq(enum.OrderStatusListening), tx.MID.Eq(mid)).First()
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -247,18 +248,11 @@ func (r *orderRepository) UpdateOrder(ctx context.Context, or *model.Order) (*mo
 
 func (r *orderRepository) updateOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error) {
 	tx := newOrder(r.DB(ctx))
-	o, err := tx.Where(tx.No.Eq(or.No), tx.MID.Eq(mid)).First()
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, err
-	}
-	if o == nil {
-		return nil, errors.New("order not found")
-	}
-	_, err = tx.Updates(o)
+	_, err := tx.Where(tx.No.Eq(or.No), tx.MID.Eq(mid)).Updates(or)
 	if err != nil {
 		return nil, err
 	}
-	return o, nil
+	return or, nil
 }
 
 func (r *orderRepository) GetOrderByStatus(ctx context.Context, status string) ([]*model.Order, error) {
@@ -269,4 +263,9 @@ func (r *orderRepository) GetOrderByStatus(ctx context.Context, status string) (
 func (r *orderRepository) GetOrderByNo(ctx context.Context, no string) (*model.Order, error) {
 	tx := newOrder(r.DB(ctx))
 	return tx.Where(tx.No.Eq(no)).First()
+}
+
+func (r *orderRepository) GetOrderPayCNo(ctx context.Context, cno string) (*model.Order, error) {
+	tx := newOrder(r.DB(ctx))
+	return tx.Where(tx.CNo.Eq(cno), tx.Status.Eq(enum.OrderStatusPending)).First()
 }

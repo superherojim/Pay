@@ -28,6 +28,6 @@ type orderTask struct {
 func (t orderTask) CheckOrder(ctx context.Context) error {
 	// do something
 	fmt.Println("CheckOrder")
-	// t.orderService.ListenOrderPay(ctx)
+	t.orderService.ListenOrderPay(ctx)
 	return nil
 }
