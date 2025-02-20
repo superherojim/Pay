@@ -1,8 +1,8 @@
 package service
 
 import (
-	"bk/internal/model"
-	"bk/internal/repository"
+	"cheemshappy_pay/internal/model"
+	"cheemshappy_pay/internal/repository"
 	"context"
 )
 

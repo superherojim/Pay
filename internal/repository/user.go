@@ -1,13 +1,14 @@
 package repository
 
 import (
-	v1 "bk/api/v1"
-	"bk/internal/model"
+	v1 "cheemshappy_pay/api/v1"
+	"cheemshappy_pay/internal/model"
 	"context"
 	"errors"
+	"time"
+
 	"github.com/imroc/req/v3"
 	"gorm.io/gorm"
-	"time"
 )
 
 type UserRepository interface {

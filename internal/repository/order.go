@@ -1,10 +1,10 @@
 package repository
 
 import (
-	v1 "bk/api/v1"
-	"bk/internal/model"
-	"bk/pkg/enum"
-	"bk/pkg/helper/xid"
+	v1 "cheemshappy_pay/api/v1"
+	"cheemshappy_pay/internal/model"
+	"cheemshappy_pay/pkg/enum"
+	"cheemshappy_pay/pkg/helper/xid"
 	"context"
 	"errors"
 	"time"
@@ -15,6 +15,7 @@ import (
 
 type OrderRepository interface {
 	GetOrder(ctx context.Context, id int64) (*model.Order, error)
+	GetOrderByNo(ctx context.Context, no string) (*model.Order, error)
 	GetOrderList(ctx context.Context, req *v1.OrderListReq) (*v1.Paginator, error)
 	CreateOrder(ctx context.Context, or *model.Order, mid int64) (*model.Order, error)
 	createOrderf(ctx context.Context, or *model.Order, mid int64, txhash ...string) (*model.Order, error)
@@ -263,4 +264,9 @@ func (r *orderRepository) updateOrderf(ctx context.Context, or *model.Order, mid
 func (r *orderRepository) GetOrderByStatus(ctx context.Context, status string) ([]*model.Order, error) {
 	tx := newOrder(r.DB(ctx))
 	return tx.Where(tx.Status.Eq(status)).Limit(50).Find()
+}
+
+func (r *orderRepository) GetOrderByNo(ctx context.Context, no string) (*model.Order, error) {
+	tx := newOrder(r.DB(ctx))
+	return tx.Where(tx.No.Eq(no)).First()
 }

@@ -1,8 +1,8 @@
 package repository
 
 import (
-	v1 "bk/api/v1"
-	"bk/internal/model"
+	v1 "cheemshappy_pay/api/v1"
+	"cheemshappy_pay/internal/model"
 	"context"
 	"encoding/json"
 	"errors"

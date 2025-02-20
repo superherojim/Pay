@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"bk/internal/model"
+	"cheemshappy_pay/internal/model"
 )
 
 func newOrder(db *gorm.DB, opts ...gen.DOOption) order {
@@ -38,6 +38,8 @@ func newOrder(db *gorm.DB, opts ...gen.DOOption) order {
 	_order.ReturnURL = field.NewString(tableName, "return_url")
 	_order.PayURL = field.NewString(tableName, "pay_url")
 	_order.TxHash = field.NewString(tableName, "tx_hash")
+	_order.Ac = field.NewString(tableName, "ac")
+	_order.APIKey = field.NewString(tableName, "api_key")
 	_order.Status = field.NewString(tableName, "status")
 	_order.NotifyStatus = field.NewString(tableName, "notify_status")
 	_order.Remark = field.NewString(tableName, "remark")
@@ -65,6 +67,8 @@ type order struct {
 	ReturnURL    field.String // 前端重定向url
 	PayURL       field.String // 支付地址
 	TxHash       field.String // 交易hash
+	Ac           field.String // 钱包地址
+	APIKey       field.String // 商户apikey
 	Status       field.String // 订单状态
 	NotifyStatus field.String // 订单回调结果
 	Remark       field.String // 备注
@@ -98,6 +102,8 @@ func (o *order) updateTableName(table string) *order {
 	o.ReturnURL = field.NewString(table, "return_url")
 	o.PayURL = field.NewString(table, "pay_url")
 	o.TxHash = field.NewString(table, "tx_hash")
+	o.Ac = field.NewString(table, "ac")
+	o.APIKey = field.NewString(table, "api_key")
 	o.Status = field.NewString(table, "status")
 	o.NotifyStatus = field.NewString(table, "notify_status")
 	o.Remark = field.NewString(table, "remark")
@@ -120,7 +126,7 @@ func (o *order) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (o *order) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 17)
+	o.fieldMap = make(map[string]field.Expr, 19)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["m_id"] = o.MID
 	o.fieldMap["no"] = o.No
@@ -132,6 +138,8 @@ func (o *order) fillFieldMap() {
 	o.fieldMap["return_url"] = o.ReturnURL
 	o.fieldMap["pay_url"] = o.PayURL
 	o.fieldMap["tx_hash"] = o.TxHash
+	o.fieldMap["ac"] = o.Ac
+	o.fieldMap["api_key"] = o.APIKey
 	o.fieldMap["status"] = o.Status
 	o.fieldMap["notify_status"] = o.NotifyStatus
 	o.fieldMap["remark"] = o.Remark

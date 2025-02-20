@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"bk/internal/model"
+	"cheemshappy_pay/internal/model"
 )
 
 func newMerchantsMetum(db *gorm.DB, opts ...gen.DOOption) merchantsMetum {

@@ -1,13 +1,14 @@
 package middleware
 
 import (
-	"bk/pkg/helper/md5"
-	"bk/pkg/helper/uuid"
-	"bk/pkg/log"
 	"bytes"
+	"cheemshappy_pay/pkg/helper/md5"
+	"cheemshappy_pay/pkg/helper/uuid"
+	"cheemshappy_pay/pkg/log"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"time"
 )
 
 func RequestLogMiddleware(logger *log.Logger) gin.HandlerFunc {

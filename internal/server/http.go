@@ -1,11 +1,11 @@
 package server
 
 import (
-	"bk/internal/handler"
-	"bk/internal/middleware"
-	"bk/pkg/jwt"
-	"bk/pkg/log"
-	"bk/pkg/server/http"
+	"cheemshappy_pay/internal/handler"
+	"cheemshappy_pay/internal/middleware"
+	"cheemshappy_pay/pkg/jwt"
+	"cheemshappy_pay/pkg/log"
+	"cheemshappy_pay/pkg/server/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"

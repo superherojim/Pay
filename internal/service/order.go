@@ -1,11 +1,11 @@
 package service
 
 import (
-	v1 "bk/api/v1"
-	"bk/internal/model"
-	"bk/internal/repository"
-	"bk/pkg/enum"
 	"bytes"
+	v1 "cheemshappy_pay/api/v1"
+	"cheemshappy_pay/internal/model"
+	"cheemshappy_pay/internal/repository"
+	"cheemshappy_pay/pkg/enum"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -28,7 +28,7 @@ type OrderService interface {
 	GetOrderList(ctx context.Context, req *v1.OrderListReq) (*v1.Paginator, error)
 	CreateOrder(ctx context.Context, req *v1.OrderParam, apikey string) (*model.Order, error)
 	CancelOrder(ctx context.Context, req *v1.OrderParam, apikey string) (*model.Order, error)
-	SuccessOrder(ctx context.Context, req *v1.OrderParam, apikey string) (*model.Order, error)
+	SuccessOrder(ctx context.Context, req *v1.OrderParam) (*model.Order, error)
 	GetOrderPay(ctx context.Context, no string) (*v1.OrderPayOut, error)
 	ListenOrder(ctx context.Context, no string, req *v1.OrderPayTxOut) (*model.Order, error)
 }
@@ -127,7 +127,10 @@ func (s *orderService) CreateOrder(ctx context.Context, req *v1.OrderParam, apik
 		}
 		return nil, fmt.Errorf("不支持的区块链网络，支持列表：%s", strings.Join(validChains, ", "))
 	}
-
+	wallet, err := s.walletService.GetWalletByMID(ctx, mapi.MID)
+	if err != nil {
+		return nil, err
+	}
 	order := &model.Order{
 		MID:       mapi.MID,
 		CNo:       req.OrderNo,
@@ -135,6 +138,8 @@ func (s *orderService) CreateOrder(ctx context.Context, req *v1.OrderParam, apik
 		ReturnURL: req.ReturnURL,
 		Status:    enum.OrderStatusPending,
 		Coin:      req.Coin,
+		APIKey:    mapi.Apikey,
+		Ac:        wallet.Ac,
 		Amount:    req.Amount,
 		Remark:    req.Remark,
 	}
@@ -157,6 +162,16 @@ func (s *orderService) CancelOrder(ctx context.Context, req *v1.OrderParam, apik
 	if mapi.MID != req.MID {
 		return nil, errors.New("unknown merchant")
 	}
+	or, err := s.orderRepository.GetOrderByNo(ctx, req.OrderNo)
+	if err != nil {
+		return nil, err
+	}
+	if or == nil {
+		return nil, errors.New("order not found")
+	}
+	if or.APIKey != apikey {
+		return nil, errors.New("unknown apikey")
+	}
 	order := &model.Order{
 		MID:    mapi.MID,
 		CNo:    req.OrderNo,
@@ -166,11 +181,11 @@ func (s *orderService) CancelOrder(ctx context.Context, req *v1.OrderParam, apik
 	if err != nil {
 		return nil, err
 	}
-	s.callbackMerchant(order, apikey, enum.OrderStatusCanceled)
+	s.callbackMerchant(order, enum.OrderStatusCanceled)
 	return order, nil
 }
 
-func (s *orderService) SuccessOrder(ctx context.Context, req *v1.OrderParam, apikey string) (*model.Order, error) {
+func (s *orderService) SuccessOrder(ctx context.Context, req *v1.OrderParam) (*model.Order, error) {
 	order := &model.Order{
 		CNo:    req.OrderNo,
 		Status: enum.OrderStatusSuccess,
@@ -179,7 +194,7 @@ func (s *orderService) SuccessOrder(ctx context.Context, req *v1.OrderParam, api
 	if err != nil {
 		return nil, err
 	}
-	go s.callbackMerchant(order, apikey, enum.OrderStatusSuccess)
+	go s.callbackMerchant(order, enum.OrderStatusSuccess)
 	return order, nil
 }
 
@@ -188,11 +203,7 @@ func (s *orderService) GetOrderPay(ctx context.Context, no string) (*v1.OrderPay
 	if err != nil {
 		return nil, err
 	}
-	wallet, err := s.walletService.GetWalletByMID(ctx, order.MID)
-	if err != nil {
-		return nil, err
-	}
-	mer, err := s.merchantsService.GetMerchants(ctx, wallet.MID)
+	mer, err := s.merchantsService.GetMerchants(ctx, order.MID)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +213,7 @@ func (s *orderService) GetOrderPay(ctx context.Context, no string) (*v1.OrderPay
 		Chain:     order.Chain,
 		Coin:      order.Coin,
 		Amount:    order.Amount,
-		Ac:        wallet.Ac,
+		Ac:        order.Ac,
 		ReturnURL: order.ReturnURL,
 	}, nil
 }
@@ -212,13 +223,13 @@ func (s *orderService) ListenOrder(ctx context.Context, no string, req *v1.Order
 	if err != nil {
 		return nil, err
 	}
-	go s.callbackMerchant(order, "1e059821-1896-43f5-a227-9b1857e95517", enum.OrderStatusSuccess)
+	go s.callbackMerchant(order, enum.OrderStatusSuccess)
 	return order, nil
 }
 
-func (s *orderService) callbackMerchant(order *model.Order, apikey, status string) {
+func (s *orderService) callbackMerchant(order *model.Order, status string) {
 	go func() {
-		err := s.syncCallbackMerchant(order, apikey, status)
+		err := s.syncCallbackMerchant(order, status)
 		order.NotifyStatus = "success"
 		if err != nil {
 			s.logger.Error("回调失败", zap.Error(err))
@@ -228,21 +239,21 @@ func (s *orderService) callbackMerchant(order *model.Order, apikey, status strin
 	}()
 }
 
-func (s *orderService) syncCallbackMerchant(order *model.Order, apikey, status string) error {
+func (s *orderService) syncCallbackMerchant(order *model.Order, status string) error {
 	// 获取商户API配置
-	mapi, err := s.merchantsApiService.GetMerchantsApiByApikey(context.Background(), apikey)
+	mapi, err := s.merchantsApiService.GetMerchantsApiByApikey(context.Background(), order.APIKey)
 	if err != nil || mapi == nil {
 		s.logger.Error("获取商户API配置失败", zap.Error(err))
 		return err
 	}
 
 	if mapi.CallbackURL == "" {
-		s.logger.Error("商户API配置回调URL为空", zap.String("apikey", apikey))
+		s.logger.Error("商户API配置回调URL为空", zap.String("apikey", order.APIKey))
 		return errors.New("商户API配置回调URL为空")
 	}
 
 	if !strings.Contains(order.NotifyURL, mapi.CallbackURL) {
-		s.logger.Error("商户API配置回调URL不匹配", zap.String("apikey", apikey), zap.String("notify_url", order.NotifyURL))
+		s.logger.Error("商户API配置回调URL不匹配", zap.String("apikey", order.APIKey), zap.String("notify_url", order.NotifyURL))
 		return errors.New("商户API配置回调URL不匹配")
 	}
 
@@ -321,4 +332,14 @@ func generateSignature(data map[string]interface{}, secret string) string {
 	h := hmac.New(sha256.New, []byte(secret))
 	h.Write(buf.Bytes())
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+func (s *orderService) ListenOrderPay(ctx context.Context, no string) error {
+	orders, err := s.orderRepository.GetOrderByStatus(ctx, enum.OrderStatusListening)
+	if err != nil {
+		return err
+	}
+	for _, order := range orders {
+	}
+	return nil
 }

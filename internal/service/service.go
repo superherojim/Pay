@@ -1,10 +1,10 @@
 package service
 
 import (
-	"bk/internal/repository"
-	"bk/pkg/helper/sid"
-	"bk/pkg/jwt"
-	"bk/pkg/log"
+	"cheemshappy_pay/internal/repository"
+	"cheemshappy_pay/pkg/helper/sid"
+	"cheemshappy_pay/pkg/jwt"
+	"cheemshappy_pay/pkg/log"
 )
 
 type Service struct {

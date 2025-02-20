@@ -1,10 +1,10 @@
 package service
 
 import (
-	v1 "bk/api/v1"
-	"bk/internal/model"
-	"bk/internal/repository"
-	"bk/pkg/wallet"
+	v1 "cheemshappy_pay/api/v1"
+	"cheemshappy_pay/internal/model"
+	"cheemshappy_pay/internal/repository"
+	"cheemshappy_pay/pkg/wallet"
 	"context"
 	"encoding/hex"
 	"fmt"

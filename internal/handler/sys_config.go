@@ -1,9 +1,9 @@
 package handler
 
 import (
-	v1 "bk/api/v1"
-	"bk/internal/model"
-	"bk/internal/service"
+	v1 "cheemshappy_pay/api/v1"
+	"cheemshappy_pay/internal/model"
+	"cheemshappy_pay/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

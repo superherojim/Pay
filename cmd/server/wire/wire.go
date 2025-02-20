@@ -4,15 +4,15 @@
 package wire
 
 import (
-	"bk/internal/handler"
-	"bk/internal/repository"
-	"bk/internal/server"
-	"bk/internal/service"
-	"bk/pkg/app"
-	"bk/pkg/helper/sid"
-	"bk/pkg/jwt"
-	"bk/pkg/log"
-	"bk/pkg/server/http"
+	"cheemshappy_pay/internal/handler"
+	"cheemshappy_pay/internal/repository"
+	"cheemshappy_pay/internal/server"
+	"cheemshappy_pay/internal/service"
+	"cheemshappy_pay/pkg/app"
+	"cheemshappy_pay/pkg/helper/sid"
+	"cheemshappy_pay/pkg/jwt"
+	"cheemshappy_pay/pkg/log"
+	"cheemshappy_pay/pkg/server/http"
 
 	"github.com/google/wire"
 	"github.com/imroc/req/v3"

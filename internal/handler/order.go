@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"bk/internal/service"
 	"bytes"
+	"cheemshappy_pay/internal/service"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"sort"
 
-	v1 "bk/api/v1"
+	v1 "cheemshappy_pay/api/v1"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -96,7 +96,7 @@ func (h *OrderHandler) SuccessOrder(ctx *gin.Context) {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
 	}
-	o, err := h.orderService.SuccessOrder(ctx, req, "")
+	o, err := h.orderService.SuccessOrder(ctx, req)
 	if err != nil {
 		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
 		return

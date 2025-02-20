@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"bk/pkg/jwt"
-	"bk/pkg/log"
+	"cheemshappy_pay/pkg/jwt"
+	"cheemshappy_pay/pkg/log"
+
 	"github.com/gin-gonic/gin"
 )
 

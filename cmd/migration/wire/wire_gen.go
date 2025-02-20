@@ -7,10 +7,10 @@
 package wire
 
 import (
-	"bk/internal/repository"
-	"bk/internal/server"
-	"bk/pkg/app"
-	"bk/pkg/log"
+	"cheemshappy_pay/internal/repository"
+	"cheemshappy_pay/internal/server"
+	"cheemshappy_pay/pkg/app"
+	"cheemshappy_pay/pkg/log"
 	"github.com/google/wire"
 	"github.com/spf13/viper"
 )

@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"bk/internal/model"
+	"cheemshappy_pay/internal/model"
 )
 
 func newSysWallet(db *gorm.DB, opts ...gen.DOOption) sysWallet {

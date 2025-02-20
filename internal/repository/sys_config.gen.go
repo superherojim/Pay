@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"bk/internal/model"
+	"cheemshappy_pay/internal/model"
 )
 
 func newSysConfig(db *gorm.DB, opts ...gen.DOOption) sysConfig {

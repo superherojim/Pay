@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bk/cmd/migration/wire"
-	"bk/pkg/config"
-	"bk/pkg/log"
+	"cheemshappy_pay/cmd/migration/wire"
+	"cheemshappy_pay/pkg/config"
+	"cheemshappy_pay/pkg/log"
 	"context"
 	"flag"
 )

@@ -25,6 +25,8 @@ type Order struct {
 	ReturnURL    string         `gorm:"column:return_url;comment:前端重定向url" json:"return_url"`     // 前端重定向url
 	PayURL       string         `gorm:"column:pay_url;comment:支付地址" json:"pay_url"`               // 支付地址
 	TxHash       string         `gorm:"column:tx_hash;comment:交易hash" json:"tx_hash"`             // 交易hash
+	Ac           string         `gorm:"column:ac;comment:钱包地址" json:"ac"`                         // 钱包地址
+	APIKey       string         `gorm:"column:api_key;comment:商户apikey" json:"api_key"`           // 商户apikey
 	Status       string         `gorm:"column:status;comment:订单状态" json:"status"`                 // 订单状态
 	NotifyStatus string         `gorm:"column:notify_status;comment:订单回调结果" json:"notify_status"` // 订单回调结果
 	Remark       string         `gorm:"column:remark;comment:备注" json:"remark"`                   // 备注

@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"bk/internal/model"
+	"cheemshappy_pay/internal/model"
 	"context"
 	"errors"
 	"fmt"
