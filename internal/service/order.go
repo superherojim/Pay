@@ -34,6 +34,7 @@ type OrderService interface {
 	GetOrderPay(ctx context.Context, no string) (*v1.OrderPayOut, error)
 	ListenOrder(ctx context.Context, no string, req *v1.OrderPayTxOut) (*model.Order, error)
 	ListenOrderPay(ctx context.Context) error
+	CheckPendingOrder(ctx context.Context) error
 }
 
 func NewOrderService(

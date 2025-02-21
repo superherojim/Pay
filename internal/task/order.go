@@ -31,6 +31,6 @@ func (t orderTask) CheckListenOrder(ctx context.Context) error {
 }
 
 func (t orderTask) CheckPendingOrder(ctx context.Context) error {
-	t.orderService.ListenOrderPay(ctx)
+	t.orderService.CheckPendingOrder(ctx)
 	return nil
 }
