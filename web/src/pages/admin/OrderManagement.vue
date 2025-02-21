@@ -35,7 +35,7 @@
                 <el-table-column prop="notify_status" :label="t('common.notify_status')" :width="160">
                     <template #default="{ row }">
                         <el-tag :type="statusTagType(row.notify_status)" effect="dark"> {{ statusText(row.notify_status)
-                            }} </el-tag>
+                        }} </el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column :label="t('order.createdAt')" :width="180">
@@ -58,11 +58,11 @@
             <el-descriptions :column="2" border>
                 <el-descriptions-item :label="t('order.orderId')">{{ currentOrder?.id || '-' }}</el-descriptions-item>
                 <el-descriptions-item :label="t('order.merchantId')">{{ currentOrder?.m_id || '-'
-                }}</el-descriptions-item>
+                    }}</el-descriptions-item>
                 <el-descriptions-item :label="t('order.systemOrderNo')">{{ currentOrder?.no || '-'
-                }}</el-descriptions-item>
+                    }}</el-descriptions-item>
                 <el-descriptions-item :label="t('order.merchantOrderNo')">{{ currentOrder?.c_no || '-'
-                }}</el-descriptions-item>
+                    }}</el-descriptions-item>
                 <el-descriptions-item :label="t('order.amount')" :span="2"> {{ currentOrder?.amount }} {{
                     currentOrder?.coin }} </el-descriptions-item>
                 <el-descriptions-item :label="t('order.currentStatus')" :span="2">
@@ -134,7 +134,8 @@ const statusTagType = (status) => {
         'failed': t('status.failed'),
         'canceled': t('status.canceled'),
         'listening': t('status.listening'),
-        'timeout': t('status.timeout')
+        'timeout': t('status.timeout'),
+        '': t('status.unknown')
     }
     return map[status] || 'info'
 }
@@ -146,7 +147,8 @@ const statusText = (status) => {
         'failed': t('statusText.failed'),
         'canceled': t('statusText.canceled'),
         'listening': t('statusText.listening'),
-        'timeout': t('statusText.timeout')
+        'timeout': t('statusText.timeout'),
+        '': t('statusText.unknown')
     }
     return map[status] || t('statusText.unknown')
 }

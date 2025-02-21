@@ -70,14 +70,16 @@ export default {
         success: 'success',
         pending: 'warning',
         failed: 'danger',
-        canceled: 'info'
+        canceled: 'info',
+        unknown: 'info',
+        timeout: 'info'
     },
     statusText: {
         completed: '已完成',
         created: '已创建',
         failed: '失败',
         canceled: '已取消',
-        unknown: '未知状态',
+        unknown: '',
         timeout: '已超时'
     },
     components: {
