@@ -133,7 +133,8 @@ const statusTagType = (status) => {
         'pending': t('status.pending'),
         'failed': t('status.failed'),
         'canceled': t('status.canceled'),
-        'listening': t('status.listening')
+        'listening': t('status.listening'),
+        'timeout': t('status.timeout')
     }
     return map[status] || 'info'
 }
@@ -144,7 +145,8 @@ const statusText = (status) => {
         'pending': t('statusText.created'),
         'failed': t('statusText.failed'),
         'canceled': t('statusText.canceled'),
-        'listening': t('statusText.listening')
+        'listening': t('statusText.listening'),
+        'timeout': t('statusText.timeout')
     }
     return map[status] || t('statusText.unknown')
 }

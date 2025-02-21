@@ -35,7 +35,8 @@ export default {
         language: 'Language',
         zh: 'Chinese',
         en: 'English',
-        notify_status: 'Notify Status'
+        notify_status: 'Notify Status',
+        selectMerchant: 'Select Merchant'
     },
     login: {
         title: 'Welcome Back 👋',
@@ -87,7 +88,8 @@ export default {
         failed: 'Failed',
         canceled: 'Canceled',
         listening: 'Listening',
-        unknown: 'Unknown Status'
+        unknown: 'Unknown Status',
+        timeout: 'Timeout'
     },
     components: {
         pagination: {

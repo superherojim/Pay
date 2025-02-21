@@ -25,7 +25,8 @@ export default {
         language: '语言',
         zh: '中文',
         en: '英文',
-        notify_status: '通知状态'
+        notify_status: '通知状态',
+        selectMerchant: '选择商户'
     },
     login: {
         title: '欢迎回来 👋',
@@ -76,7 +77,8 @@ export default {
         created: '已创建',
         failed: '失败',
         canceled: '已取消',
-        unknown: '未知状态'
+        unknown: '未知状态',
+        timeout: '已超时'
     },
     components: {
         pagination: {
