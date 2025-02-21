@@ -6,7 +6,9 @@
 An open-source Web3 third-party payment system that provides secure and reliable payment solutions for decentralized applications. Developed by the [CheemsHappy](https://pump.fun/coin/GshQsatxGANKbR4HAZE96HruyqoVvHnsktJWWLzXpump) community.
 
 ```
-A meme created to celebrate the joyful spirit of Cheems. Cheems just wants you to be happy and spread happiness around the world.
+A meme created to celebrate the joyful spirit of Cheems.
+
+ Cheems just wants you to be happy and spread happiness around the world.
 ```
 
 We build on [pump.fun](https://pump.fun/coin/GshQsatxGANKbR4HAZE96HruyqoVvHnsktJWWLzXpump)
