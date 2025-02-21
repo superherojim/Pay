@@ -216,3 +216,15 @@ func (h *OrderHandler) TestCall(ctx *gin.Context) {
 #### 支付
 
 ![image](./assets/image-pay.png)
+
+## 赞助
+
+如果你想赞助 CheemsHappy
+
+AC: 0x888f1AD00aE63f7257e9B76Cc5a88C288b6911a3
+
+![image](./assets/image-ac.png)
+
+## License
+
+本项目使用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
