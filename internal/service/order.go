@@ -418,3 +418,39 @@ func (s *orderService) getRequiredConfirmations(cn string) int64 {
 	}
 	return 6 // 默认值
 }
+
+func (s *orderService) CheckPendingOrder(ctx context.Context) error {
+	orders, err := s.orderRepository.GetOrderByStatus(ctx, enum.OrderStatusPending)
+	if err != nil {
+		return err
+	}
+
+	// 使用带缓冲的channel控制并发数
+	sem := make(chan struct{}, 10) // 同时处理10个订单
+	var wg sync.WaitGroup
+	for _, or := range orders {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(o *model.Order) {
+			defer func() {
+				<-sem
+				wg.Done()
+			}()
+
+			// 检查超时
+			if time.Since(o.CreatedAt).Minutes() > float64(o.TimeOut) {
+				o.Status = enum.OrderStatusTimeout
+				_, err = s.orderRepository.UpdateOrder(ctx, o)
+				if err != nil {
+					s.logger.Error("订单超时状态更新失败",
+						zap.String("order_no", o.No),
+						zap.Error(err))
+				}
+				return
+			}
+		}(or)
+	}
+
+	wg.Wait()
+	return nil
+}

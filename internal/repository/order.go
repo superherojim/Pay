@@ -257,7 +257,7 @@ func (r *orderRepository) updateOrderf(ctx context.Context, or *model.Order, mid
 
 func (r *orderRepository) GetOrderByStatus(ctx context.Context, status string) ([]*model.Order, error) {
 	tx := newOrder(r.DB(ctx))
-	return tx.Where(tx.Status.Eq(status)).Limit(50).Find()
+	return tx.Where(tx.Status.Eq(status)).Limit(10).Find()
 }
 
 func (r *orderRepository) GetOrderByNo(ctx context.Context, no string) (*model.Order, error) {

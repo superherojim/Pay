@@ -3,11 +3,11 @@ package task
 import (
 	"cheemshappy_pay/internal/service"
 	"context"
-	"fmt"
 )
 
 type OrderTask interface {
-	CheckOrder(ctx context.Context) error
+	CheckListenOrder(ctx context.Context) error
+	CheckPendingOrder(ctx context.Context) error
 }
 
 func NewOrderTask(
@@ -25,9 +25,12 @@ type orderTask struct {
 	*Task
 }
 
-func (t orderTask) CheckOrder(ctx context.Context) error {
-	// do something
-	fmt.Println("CheckOrder")
+func (t orderTask) CheckListenOrder(ctx context.Context) error {
+	t.orderService.ListenOrderPay(ctx)
+	return nil
+}
+
+func (t orderTask) CheckPendingOrder(ctx context.Context) error {
 	t.orderService.ListenOrderPay(ctx)
 	return nil
 }

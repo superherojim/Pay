@@ -33,19 +33,29 @@ func (t *TaskServer) Start(ctx context.Context) error {
 	// t.scheduler = gocron.NewScheduler(time.FixedZone("PRC", 8*60*60))
 
 	//_, err := t.scheduler.Every("3s").Do(func()
-	_, err := t.scheduler.Every("60s").Do(func() {
-		err := t.orderTask.CheckOrder(ctx)
+	_, err := t.scheduler.Every("90s").Do(func() {
+		err := t.orderTask.CheckListenOrder(ctx)
 		if err != nil {
-			fmt.Println("CheckOrder error", zap.Error(err))
+			fmt.Println("CheckListenOrder error", zap.Error(err))
 		}
 	})
 	if err != nil {
-		fmt.Println("CheckOrder error", zap.Error(err))
+		fmt.Println("CheckListenOrder error", zap.Error(err))
 	}
 
+	_, err = t.scheduler.Every("60s").Do(func() {
+		err := t.orderTask.CheckPendingOrder(ctx)
+		if err != nil {
+			fmt.Println("CheckPendingOrder error", zap.Error(err))
+		}
+	})
+	if err != nil {
+		fmt.Println("CheckPendingOrder error", zap.Error(err))
+	}
 	t.scheduler.StartBlocking()
 	return nil
 }
+
 func (t *TaskServer) Stop(ctx context.Context) error {
 	t.scheduler.Stop()
 	fmt.Println("TaskServer stop...")
